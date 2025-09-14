@@ -2,10 +2,7 @@ name: Run tests
 
 on:
   pull_request:
-    branches: [ main ]
-  workflow_dispatch:
-  push:
-    branches: [ main ]
+    branches: [ feedback ]
 
 jobs:
   tests:
@@ -23,33 +20,58 @@ jobs:
 
     - name: Run tests task-01
       id: task01
-      continue-on-error: true
+      if: always()
       run: |
         /workspace/task-01/checker.sh /workspace/task-01/solution.sh ./task-01/solution.sh /workspace/data
 
     - name: Run tests task-02
       id: task02
-      continue-on-error: true
+      if: always()
       run: |
         /workspace/task-02/checker.sh /workspace/task-02/solution.sh ./task-02/solution.sh /workspace/data
 
     - name: Generate test summary
       if: always()
       run: |
-        echo "# Test Results" >> $GITHUB_STEP_SUMMARY
-        echo "| Task | Result |" >> $GITHUB_STEP_SUMMARY
-        echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+        # Create summary content
+        SUMMARY_CONTENT=$(cat << 'EOF'
+        # Test Results
+        | Task | Result |
+        |------|--------|
+        EOF
+        )
         
-        # Task 01 result
+        # Add Task 01 result
         if [ "${{ steps.task01.outcome }}" = "success" ]; then
-          echo "| Task 01 | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 01 | ✅ Passed |"
         else
-          echo "| Task 01 | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 01 | ❌ Failed |"
         fi
-
-        # Task 02 result
+        
+        # Add Task 02 result
         if [ "${{ steps.task02.outcome }}" = "success" ]; then
-          echo "| Task 02 | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 02 | ✅ Passed |"
         else
-          echo "| Task 02 | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 02 | ❌ Failed |"
         fi
+        
+        # Write to step summary
+        echo -e "$SUMMARY_CONTENT" >> $GITHUB_STEP_SUMMARY
+        
+        # Save summary for PR comment
+        echo -e "$SUMMARY_CONTENT" > /tmp/test_summary.md
+
+    - name: Comment PR with test results
+      if: always() && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('/tmp/test_summary.md', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });
