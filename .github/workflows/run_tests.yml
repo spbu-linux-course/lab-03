@@ -4,6 +4,8 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+  push:
+    branches: [ main ]
 
 jobs:
   tests:
@@ -19,8 +21,21 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Run tests script
+    - name: Initialize test results
+      id: init
       run: |
-        ls -la
-        pwd
-        ls /workspace
+        echo "# Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "| Task | Result |" >> $GITHUB_STEP_SUMMARY
+        echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+
+    - name: Run tests task-01
+      id: task01
+      continue-on-error: true
+      run: |
+        if /workspace/task-01/checker.sh /workspace/task-01/solution.sh ./task-01/solution.sh ./workspace/data; then
+          echo " Task 01 passed"
+          echo "| Task 01 | Passed |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo " Task 01 failed"
+          echo "| Task 01 | Failed |" >> $GITHUB_STEP_SUMMARY
+        fi
