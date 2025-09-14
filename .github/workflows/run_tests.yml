@@ -23,3 +23,4 @@ jobs:
       run: |
         ls -la
         pwd
+        ls /workspace
