@@ -8,6 +8,10 @@ jobs:
   tests:
     name: Run tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     container:
       image: cepryh9/spbu-linux-course-lab-03:latest
       options: --user root
@@ -56,10 +60,10 @@ jobs:
         fi
         
         # Write to step summary
-        echo -e "$SUMMARY_CONTENT" >> $GITHUB_STEP_SUMMARY
+        echo "$SUMMARY_CONTENT" >> $GITHUB_STEP_SUMMARY
         
         # Save summary for PR comment
-        echo -e "$SUMMARY_CONTENT" > /tmp/test_summary.md
+        echo "$SUMMARY_CONTENT" > /tmp/test_summary.md
 
     - name: Comment PR with test results
       if: always() && github.event_name == 'pull_request'
