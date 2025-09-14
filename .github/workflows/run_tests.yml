@@ -1,9 +1,9 @@
-name: PR Validation
+name: Run tests
 
 on:
   pull_request:
     branches: [ main ]
-    types: [opened, synchronize, reopened]
+  workflow_dispatch:
 
 jobs:
   tests:
