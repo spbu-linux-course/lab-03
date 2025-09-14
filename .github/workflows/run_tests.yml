@@ -21,22 +21,35 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Initialize test results
+      id: init
+      run: |
+        cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+        # Test Results
+        | Task | Result |
+        |------|--------|
+        EOF
+
     - name: Run tests task-01
       id: task01
       continue-on-error: true
       run: |
-        # Initialize summary table
-        {
-          echo "# Test Results"
-          echo "| Task | Result |"
-          echo "|------|--------|"
-        } >> $GITHUB_STEP_SUMMARY
-        
-        # Run test and add result to table
         if /workspace/task-01/checker.sh /workspace/task-01/solution.sh ./task-01/solution.sh ./workspace/data; then
-          echo " Task 01 passed"
+          echo "✅ Task 01 passed"
           echo "| Task 01 | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
         else
-          echo " Task 01 failed"
+          echo "❌ Task 01 failed"
           echo "| Task 01 | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Run tests task-02
+      id: task02
+      continue-on-error: true
+      run: |
+        if /workspace/task-02/checker.sh /workspace/task-02/solution.sh ./task-02/solution.sh ./workspace/data; then
+          echo "✅ Task 02 passed"
+          echo "| Task 02 | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Task 02 failed"
+          echo "| Task 02 | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
         fi
