@@ -22,17 +22,47 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Run tests task-01
-      id: task01
+    - name: Make solutions executable
+      run: |
+        chmod +x ./task-*/solution.sh
+
+    - name: Run tests task-01.1
+      id: task01_1
       if: always()
       run: |
-        /workspace/task-01/checker.sh /workspace/task-01/solution.sh ./task-01/solution.sh /workspace/data
+       /workspace/task-01/checker.sh ./task-01/solution.sh /workspace/task-01/expected statistics
+
+    - name: Run tests task-01.2
+      id: task01_2
+      if: always()
+      run: |
+       /workspace/task-01/checker.sh ./task-01/solution.sh /workspace/task-01/expected alice.txt && /workspace/task-01/checker.sh ./task-01/solution.sh /workspace/task-01/expected ALICE.txt
+
+    - name: Run tests task-01.3
+      id: task01_3
+      if: always()
+      run: |
+       (/workspace/task-01/checker.sh ./task-01/solution.sh /workspace/task-01/expected alice_shuf.txt) \
+         || (cp /workspace/task-01/expected/alice_shuf_1.txt /workspace/task-01/expected/alice_shuf.txt && \
+             /workspace/task-01/checker.sh ./task-01/solution.sh /workspace/task-01/expected alice_shuf.txt)
 
     - name: Run tests task-02
       id: task02
       if: always()
       run: |
-        /workspace/task-02/checker.sh /workspace/task-02/solution.sh ./task-02/solution.sh /workspace/data
+       /workspace/task-02/checker.sh ./task-02/solution.sh /workspace/task-02/expected
+
+    - name: Run tests task-03
+      id: task03
+      if: always()
+      run: |
+       /workspace/task-03/checker.sh ./task-03/solution.sh /workspace/task-03/expected
+
+    - name: Run tests task-04
+      id: task04
+      if: always()
+      run: |
+       /workspace/task-04/checker.sh ./task-04/solution.sh /workspace/task-04/expected
 
     - name: Generate test summary
       if: always()
@@ -44,19 +74,44 @@ jobs:
         |------|--------|
         EOF
         )
-        
-        # Add Task 01 result
-        if [ "${{ steps.task01.outcome }}" = "success" ]; then
-          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 01 | ✅ Passed |"
+
+        if [ "${{ steps.task01_1.outcome }}" = "success" ]; then
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 01.1 | ✅ Passed |"
         else
-          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 01 | ❌ Failed |"
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 01.1 | ❌ Failed |"
         fi
-        
+
+        if [ "${{ steps.task01_2.outcome }}" = "success" ]; then
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 01.2 | ✅ Passed |"
+        else
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 01.2 | ❌ Failed |"
+        fi
+
+        if [ "${{ steps.task01_3.outcome }}" = "success" ]; then
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 01.3 | ✅ Passed |"
+        else
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 01.3 | ❌ Failed |"
+        fi
+
         # Add Task 02 result
         if [ "${{ steps.task02.outcome }}" = "success" ]; then
           SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 02 | ✅ Passed |"
         else
           SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 02 | ❌ Failed |"
+        fi
+        
+        # Add Task 03 result
+        if [ "${{ steps.task03.outcome }}" = "success" ]; then
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 03 | ✅ Passed |"
+        else
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 03 | ❌ Failed |"
+        fi
+        
+        # Add Task 04 result
+        if [ "${{ steps.task04.outcome }}" = "success" ]; then
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 04 | ✅ Passed |"
+        else
+          SUMMARY_CONTENT="${SUMMARY_CONTENT}\n| Task 04 | ❌ Failed |"
         fi
         
         # Write to step summary
